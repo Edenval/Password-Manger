@@ -3,6 +3,7 @@ import math
 import csv
 from tkinter import messagebox #module of code, not imported with tkinter *
 import pyperclip
+import json
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 
 #Password Generator Project
@@ -33,25 +34,83 @@ def generate_password():
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 
 def save():
-    popo = web_entry.get()
-    emailprint = email_entry.get()
-    passprint = password_entry.get()
+    website1 = web_entry.get()
+    email1 = email_entry.get()
+    password1 = password_entry.get()
 
 
+    new_data = {
+        website1: {
+            "email": email1,
+            "password": password1
+        }
+    }
     #messagebox.showinfo(title="Confirmation", message="Password has been added")
-    if len(popo) == 0 or len(passprint) == 0:
-        print(len(popo))
+    if len(website1) == 0 or len(password1) == 0:
         messagebox.askokcancel(title="Empty fields", message="Please fill up all fields")
-    #THE ASKOKCANCEL RECEIVES A BOOL TRUE/FALSE UPON METHOD CALL OK OR CANCEL
     else:
-        is_ok = messagebox.askokcancel(title=popo, message=f"These are the details entered: \nWebsite: {popo} \nEmail: {emailprint} \nPassword: {passprint}")
-        if is_ok:
-            with open("password_manage.txt", mode="a") as file:
-                file.write(f"{web_entry.get()} | {email_entry.get()} | {password_entry.get()}\n")
-                web_entry.delete(0, END)
-                password_entry.delete(0, END)
+        #"C:\\Users\\Eden\\PycharmProjects\\pythonProject12\\passmanager\\1.json"
+        try:
+            with open("1.json", "r") as f:
+                data = json.load(f)
+
+
+        except FileNotFoundError:
+            with open("1.json", "w") as f:
+                json.dump(new_data, f, indent=4)
+
+
+        else:
+            data.update(new_data)
+            with open("1.json", "w") as f:
+                json.dump(data, f, indent=4)
+
+                print(data)
+        finally:
+            web_entry.delete(0, END)
+            password_entry.delete(0, END)
+
+# ---------------------------- PASS SEARCH ------------------------------- #
+def find_password():
+    website = web_entry.get()
+    email = email_entry.get()
+    password = password_entry.get()
+  
+
+    try:
+         with open("1.json", "r") as f:
+            data = json.load(f)
+            print(data)
+            dataemail = data[website]["email"]
+            print(dataemail)
+            datapass = data[website]["password"]
+            print(dataemail + datapass)
+            messagebox.askokcancel(title="Details", message=f"Website: {web_entry.get()}\nEmail: {dataemail}\nPassword: {datapass}")
+            pyperclip.copy(datapass)
+
+    except FileNotFoundError:
+        if len(web_entry.get()) == 0:
+            messagebox.askokcancel(title="Empty fields", message="Please fill up all fields")
+        else:
+            messagebox.showinfo(title="No data found", message=f"No data file found")
+    except KeyError:
+        if len(web_entry.get()) == 0:
+            messagebox.askokcancel(title="Empty fields", message="Please fill up all fields")
+        else:
+            print("sd")
+            messagebox.showinfo(title="No data found", message=f"No website data found")
+
+    # else:
+    #     dataemail = data[email]["email"]
+    #     datapass = data1[password]["password"]
+    #     print(dataemail + datapass)
+    #     messagebox.askokcancel(title="Details",
+    #                            message=f"Website: {web_entry.get()}\nEmail: {dataemail}\nPassword: {datapass}")
+    #     pyperclip.copy(datapass)
 
 # ---------------------------- UI SETUP ------------------------------- #
+
+
 
 window = Tk()
 window.title("Password Manager")
@@ -67,9 +126,9 @@ canvas.grid(column=1, row=0)
 web_label = Label(text="Website: ")
 web_label.grid(column=0, row=1)
 
-web_entry = Entry(width=53) #ENTRY
+web_entry = Entry(width=34) #ENTRY
 web_entry.focus()
-web_entry.grid(column=1, row=1, columnspan=2)
+web_entry.grid(column=1, row=1, columnspan=1)
 popo = web_entry.get()
 #email/username
 email_label = Label(text="Email/Username: ")
@@ -78,6 +137,7 @@ email_label.grid(column=0, row=2)
 email_entry = Entry(width=53) #ENTRY
 email_entry.insert(0, "@gmail.com")
 email_entry.grid(column=1, row=2, columnspan=2)
+
 
 
 
@@ -95,6 +155,7 @@ generate_button.grid(column=2, row=3)
 add_button = Button(text="Add", width=45, command=save)
 add_button.grid(column=1, row=4, columnspan=2)
 
-
+search_button = Button(text="Search", width=15, command=find_password)
+search_button.grid(column=2, row=1, columnspan=1)
 
 window.mainloop()
